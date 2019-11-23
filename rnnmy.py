@@ -8,11 +8,10 @@ Created on Fri Nov 15 15:46:42 2019
 import numpy as np
 import matplotlib.pyplot as plt 
 import pandas as pd
-
 #importing the training set 
 #only the np arrays can be the input to machine learning models in keras
-dataset_train= pd.read_csv('Google_Stock_Price_Train.csv')
-training_set= dataset_train.iloc[:,1:2].values
+dataset_train= pd.read_csv('Google_Stock_Price_Train 3.csv')
+training_set= dataset_train.iloc[:,[1,5]].values
 
 #standardising the data
 from sklearn.preprocessing import MinMaxScaler
@@ -69,26 +68,29 @@ regressor.fit(x_train, y_train, epochs=10, batch_size=32)
 #making the predictions and visualising the results 
 
 #getting the real stock price of 2017 
-dataset_test= pd.read_csv('Google_Stock_Price_Test.csv')
-real_stock_price= dataset_test.iloc[:,1:2].values
-
+dataset_test= pd.read_csv('Google_Stock_Price_Test 1.csv')
+real_stock_price= dataset_test.iloc[:,[1,5]].values
+real_stock_prices = dataset_test.iloc[:,1:2].values
 #getting the predicted stock price of 2017 
-dataset_total= pd.concat((dataset_train['Open'], dataset_test['Open']), axis=0)
-inputs= dataset_total[len(dataset_total)-len(dataset_total)-60:].values
-inputs=inputs.reshape(-1,1)
+dataset_total = pd.concat((dataset_train[['Open','Volume']], dataset_test[['Open','Volume']]), axis = 0)
+inputs= dataset_total[len(dataset_total)-len(dataset_test)-60:].values
+inputs=inputs.reshape(-1,2)
 inputs= sc.transform(inputs)
 x_test= []
 
 for i in range(60, 80):
-    x_test.append(inputs[i-60:i,0])
+    x_test.append(inputs[i-60:i, 0])
 x_test= np.asarray(x_test)
+print(x_test)
 x_test= np.reshape(x_test, (x_test.shape[0], x_test.shape[1],1))
 predicted_stock_price= regressor.predict(x_test)
-predicted_stock_price= sc.inverse_transform(predicted_stock_price)
+predicted_stock_price2 = np.zeros(shape=(len(predicted_stock_price), 2) )
+predicted_stock_price2[:,0]=predicted_stock_price[:,0]
+predicted_stock_price= sc.inverse_transform(predicted_stock_price2)[:,0]
 
 #visualizing the results 
-plt.plot(real_stock_price, color='red', label='Real Google Stock Price')
-plt.plot(real_stock_price, color='blue', label='Predicted Google Stock Price')
+plt.plot(real_stock_prices, color='red', label='Real Google Stock Price')
+plt.plot(predicted_stock_price, color='blue', label='Predicted Google Stock Price')
 plt.title('Google Stock Price Prediction')
 plt.xlabel('Time')
 plt.ylabel('Google Stock Price')
